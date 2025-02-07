@@ -13,9 +13,8 @@ method: POST
 body: { title: "title" ,description: "description"}
 
 2. List resources with basic filters.
-url: http://localhost:3000/courses
+url: http://localhost:3000/courses?page=${number}&size=${number}&title=${string}
 method: GET
-params: 
 
 3. Get details of a resource.
 url: http://localhost:3000/courses/:id
