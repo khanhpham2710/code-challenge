@@ -13,8 +13,20 @@ const port = process.env.PORT || 3001;
 const dbPath = path.join(__dirname, "..", "data", "db.json")
 
 app.get("/courses", (req: Request, res: Response) => {
-  const courses = JSON.parse(fs.readFileSync(dbPath, "utf-8")).courses;
-  res.status(200).json(courses);
+  let { title, page = 0, size = 2 } = req.query;
+
+  page = Number(page);
+  size = Number(size);
+
+  let db = JSON.parse(fs.readFileSync(dbPath, "utf-8")).courses;
+
+  if (title) {
+    const filter = title as string
+    db = db.filter((course: Course) => course.title.includes(filter.toLowerCase().trim()));
+  }
+
+  const paginatedCourses = db.slice(page * size, (page + 1) * size);
+  res.status(200).json(paginatedCourses);
 });
 
 app.get("/courses/:id", (req: Request, res: Response) => {
@@ -52,8 +64,8 @@ app.post("/courses", (req: Request, res: Response) => {
 
   const newCourse = {
     id: newId,
-    title,
-    description,
+    title: title.trim(),
+    description: description.trim(),
   };
 
   db.courses.push(newCourse);
@@ -80,8 +92,8 @@ app.put("/courses/:id", (req: Request, res: Response) => {
     const oldCourse = db.courses[index];
     db.courses[index] = {
       id: Number(id),
-      title: title ? title : oldCourse.title,
-      description: description ? description : oldCourse.description,
+      title: title ? title.trim() : oldCourse.title,
+      description: description ? description.trim() : oldCourse.description,
     };
 
     fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));

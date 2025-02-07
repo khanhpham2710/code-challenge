@@ -19,6 +19,11 @@
       "id": 4,
       "title": "Typescript cơ bản 2",
       "description": "Kiến thức về ngôn ngữ lập trình Typescript 2"
+    },
+    {
+      "id": 5,
+      "title": "Typescript cơ bản",
+      "description": "Kiến thức về ngôn ngữ lập trình Typescript"
     }
   ]
 }
