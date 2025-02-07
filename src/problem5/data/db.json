@@ -1,0 +1,24 @@
+{
+  "courses": [
+    {
+      "id": 1,
+      "title": "Kiến thức cơ bản",
+      "description": "Kiến thức cơ bản cho người mới bắt đầu"
+    },
+    {
+      "id": 2,
+      "title": "HTML/CSS cơ bản",
+      "description": "Kiến thức HTML/CSS để thiết kế giao diện web"
+    },
+    {
+      "id": 3,
+      "title": "Javascript cơ bản",
+      "description": "Kiến thức về ngôn ngữ lập trình Javascript"
+    },
+    {
+      "id": 4,
+      "title": "Typescript cơ bản 2",
+      "description": "Kiến thức về ngôn ngữ lập trình Typescript 2"
+    }
+  ]
+}
