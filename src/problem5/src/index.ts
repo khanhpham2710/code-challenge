@@ -10,7 +10,7 @@ const app: Express = express();
 app.use(express.json());
 const port = process.env.PORT || 3001;
 
-const dbPath = path.join(__dirname, "..", "data", "db.json")
+const dbPath = path.resolve(__dirname, "../data/db.json");
 
 app.get("/courses", (req: Request, res: Response) => {
   let { title, page = 0, size = 2 } = req.query;
@@ -21,8 +21,10 @@ app.get("/courses", (req: Request, res: Response) => {
   let db = JSON.parse(fs.readFileSync(dbPath, "utf-8")).courses;
 
   if (title) {
-    const filter = title as string
-    db = db.filter((course: Course) => course.title.includes(filter.toLowerCase().trim()));
+    const filter = title as string;
+    db = db.filter((course: Course) =>
+      course.title.includes(filter.toLowerCase().trim())
+    );
   }
 
   const paginatedCourses = db.slice(page * size, (page + 1) * size);
@@ -59,8 +61,9 @@ app.post("/courses", (req: Request, res: Response) => {
   }
 
   const db = JSON.parse(fs.readFileSync(dbPath, "utf-8"));
+  const ids = db.courses.map((item: Course) => item.id);
 
-  const newId = db.courses.length + 1;
+  const newId = Math.max(...ids) + 1;
 
   const newCourse = {
     id: newId,

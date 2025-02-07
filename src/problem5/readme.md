@@ -3,7 +3,6 @@
 ## To run project:
 - npm i
 - npm run dev
-or npm run build then npm run start
 
 ## API endpoint
 
