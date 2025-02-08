@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState, useEffect } from "react";
+import { toast } from "./hooks/use-toast";
 
 const currenciesEnums = [
   "BLUR",
@@ -93,11 +94,16 @@ function App() {
         setCurrencies(data);
       } catch (error) {
         console.log(error);
+        toast({
+          title: 'Some thing went wrong',
+          variant: 'destructive'
+        })
       }
     }
 
     getData();
   }, []);
+
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     if (currencies) {
@@ -117,11 +123,11 @@ function App() {
   }
 
   return (
-    <div className="w-screen h-screen flex justify-center items-center px-24">
+    <div className="w-screen h-screen flex justify-center items-center px-8 md:px-12 lg:px-24 py-10">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="grid grid-cols-3 gap-4 w-full px-24 py-10 border-2 rounded-3xl border-black"
+          className="md:grid md:grid-cols-3 gap-4 w-full px-8 md:px-12 lg:px-24 py-10 border-2 rounded-3xl border-black"
         >
           <FormField
             control={form.control}
@@ -206,10 +212,10 @@ function App() {
               </FormItem>
             )}
           />
-          <p className="col-span-2">
+          <Button type="submit" className="mt-4 w-full">SWAP</Button>
+          <div className="col-span-2 mt-4">
             Result: {result}
-          </p>
-          <Button type="submit">CONFIRM SWAP</Button>
+          </div>
         </form>
       </Form>
     </div>
