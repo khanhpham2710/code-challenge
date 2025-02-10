@@ -58,7 +58,9 @@ const currenciesEnums = [
 ] as const;
 
 const formSchema = z.object({
-  input: z.number().min(0.01, { message: "Amount should be greater than 0" }),
+  input: z.string().refine((value) => /^[0-9]*\.?[0-9]+$/.test(value), {
+    message: "Invalid decimal number",
+  }),
   inputCurrency: z.enum(currenciesEnums),
   outputCurrency: z.enum(currenciesEnums),
 });
@@ -76,7 +78,7 @@ function App() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      input: 0,
+      input: "",
       inputCurrency: "USC",
       outputCurrency: "USDC",
     },
@@ -95,15 +97,14 @@ function App() {
       } catch (error) {
         console.log(error);
         toast({
-          title: 'Some thing went wrong',
-          variant: 'destructive'
-        })
+          title: "Some thing went wrong",
+          variant: "destructive",
+        });
       }
     }
 
     getData();
   }, []);
-
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     if (currencies) {
@@ -117,107 +118,134 @@ function App() {
       );
 
       setResult(
-        (input * currencies[outputIndex].price) / currencies[inputIndex].price
+        (parseFloat(input) * currencies[outputIndex].price) /
+          currencies[inputIndex].price
       );
     }
   }
 
   return (
-    <div className="w-screen h-screen flex justify-center items-center px-8 md:px-12 lg:px-24 py-10">
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="md:grid md:grid-cols-3 gap-4 w-full px-8 md:px-12 lg:px-24 py-10 border-2 rounded-3xl border-black"
-        >
-          <FormField
-            control={form.control}
-            name="input"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Amount to send</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      const parsedValue = value ? parseFloat(value) : 0;
-                      field.onChange(parsedValue);
-                    }}
-                    value={field.value || ""}
-                  />
-                </FormControl>
-                <FormDescription>Please enter the amount</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="inputCurrency"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Input Currency</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+    <div className="w-screen h-screen flex justify-center items-center px-8 md:px-12 lg:px-24 py-10 min-h-screen bg-blue-100">
+      <div className="bg-white p-6 rounded-3xl shadow-lg w-full max-w-lg border-2 border-black">
+        <h1 className="text-3xl font-bold mb-6 text-center text-blue-800">
+          Expense Tracker
+        </h1>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="md:grid md:grid-cols-2 gap-4 w-full px-2"
+          >
+            <FormField
+              control={form.control}
+              name="input"
+              render={({ field }) => (
+                <FormItem className="col-span-2">
+                  <FormLabel className="text-md font-semibold text-blue-600">
+                    Amount to send
+                  </FormLabel>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select input currency" />
-                    </SelectTrigger>
+                    <Input
+                      type="text"
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        let value = e.target.value;
+                        value = value.replace(/[^0-9.]/g, "");
+
+                        const dotCount = (value.match(/\./g) || []).length;
+                        if (dotCount > 1) {
+                          value =
+                            value.slice(0, value.indexOf(".") + 1) +
+                            value
+                              .slice(value.indexOf(".") + 1)
+                              .replace(/\./g, "");
+                        }
+
+                        field.onChange(value);
+                      }}
+                      className="w-full px-4 py-2 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={field.value}
+                      placeholder="Please enter the amount"
+                    />
                   </FormControl>
-                  <SelectContent>
-                    {currenciesEnums.map((currency) => (
-                      <SelectItem key={currency} value={currency}>
-                        {currency}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormDescription>
-                  Select the currency you are sending
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="outputCurrency"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Output Currency</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select output currency" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {currenciesEnums.map((currency) => (
-                      <SelectItem key={currency} value={currency}>
-                        {currency}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormDescription>
-                  Select the currency to receive
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="submit" className="mt-4 w-full">SWAP</Button>
-          <div className="col-span-2 mt-4">
-            Result: {result}
-          </div>
-        </form>
-      </Form>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="inputCurrency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-md font-semibold text-blue-600">
+                    Input Currency
+                  </FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select input currency" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {currenciesEnums.map((currency) => (
+                        <SelectItem key={currency} value={currency}>
+                          {currency}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Select the currency you are sending
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="outputCurrency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-md font-semibold text-blue-600">
+                    Output Currency
+                  </FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select output currency" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {currenciesEnums.map((currency) => (
+                        <SelectItem key={currency} value={currency}>
+                          {currency}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Select the currency to receive
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              type="submit"
+              className="mt-4 w-full col-span-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              SWAP
+            </Button>
+            <div className="col-span-2 mt-2 text-2xl font-semibold text-blue-800">
+              Result: {result}
+            </div>
+          </form>
+        </Form>
+      </div>
     </div>
   );
 }
